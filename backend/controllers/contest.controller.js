@@ -20,28 +20,35 @@ export const getPastContests = async (req, res) => {
     }
 };
 
-export const bookmarkContest = async (req, res) => {
-    try {
-        const user = req.user;
-        // if (!user) {
-        //     return res.status(404).json({ error: "User not found" });
-        // }
-        const { id } = req.params;
 
-        user.markedContest.push(id);
+export const toggleBookmarkContest = async (req, res) => {
+    try {
+        const { contestId } = req.body;
+        const user = req.user;
+        // const user = await User.findById(userId);
+        // if (!user) return res.status(404).json({ error: 'User not found' });
+    
+        const index = user.bookmarks.indexOf(contestId);
+        if (index === -1) {
+          user.bookmarks.push(contestId);
+        } else {
+          user.bookmarks.splice(index, 1);
+        }
         await user.save();
-        res.json({ markedContest: user.markedContest });
-    } catch (err) {
+        const bookmark = await User.findById(req.user._id).populate("bookmarks");
+        res.json({ success: true, bookmarks: bookmark.bookmarks });
+      } catch (err) {
         res.status(500).json({ error: err.message });
-    }
+      }
 }
 
 export const getBookmarks = async (req, res) => {
     try {
-        const user = await User.findById(req.user).populate("bookmarks");
-        res.json(user.bookmarks);
-    } catch (error) {
-        res.status(500).json({ error: err.message });
+        const user = await User.findById(req.user._id).populate("bookmarks");
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        res.json({bookmarks : user.bookmarks});
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 };
 

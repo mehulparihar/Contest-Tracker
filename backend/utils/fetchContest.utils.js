@@ -4,8 +4,9 @@ import { fetchCodeChefContests, fetchCodeforcesContests, fetchLeetCodeContests }
 
 const saveContestsToDB = async (contests) => {
     try {
+        await Contest.deleteMany({});
         for (const contest of contests) {
-            await Contest.findOneAndUpdate({ link: contest.url }, contest, { upsert: true });
+            await Contest.insertMany(contest);
         }
         console.log('Contests saved to DB');
     } catch (err) {

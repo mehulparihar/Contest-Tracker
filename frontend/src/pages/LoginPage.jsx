@@ -20,10 +20,6 @@ const LoginPage = () => {
         localStorage.setItem('token', 'mockToken123');
         try {
           login(formData);
-          toast.success('Login successful! Redirecting...');
-          setTimeout(() => {
-            navigate('/');
-          }, 1500);
           setIsLoading(false);
         } catch (error) {
           toast.error('invalid credintials');

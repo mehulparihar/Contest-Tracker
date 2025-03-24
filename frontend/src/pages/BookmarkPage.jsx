@@ -1,54 +1,62 @@
 import React, { useEffect, useState } from 'react';
 import useContestStore from '../stores/contestStore';
-import { FaBookmark, FaRegBookmark } from 'react-icons/fa'; // Bookmark icons
 import { userStore } from '../stores/userStore';
+import { FaBookmark, FaRegBookmark } from 'react-icons/fa'; // Bookmark icons
 
-const HomePage = () => {
-  const { contests, filteredContests, loading, error, fetchContests, filterContests, toggleBookmark, bookmarks, fetchBookmark  } =
-  useContestStore();
-  const {user} = userStore();
+const BookmarkPage = () => {
+  const { contests, filteredContests, loading, error, fetchContests, filterContests, fetchBookmark, bookmarks, toggleBookmark } =
+    useContestStore();
+  const { user } = userStore();
+
+  // Fetch contests on component mount
   useEffect(() => {
-    fetchContests();
-    if(user) fetchBookmark(user._id);
-  }, [user]);
-
-  
+    if (user) fetchBookmark(user._id);
+  }, [fetchBookmark, user]);
 
   const handleFilterChange = (e) => {
     filterContests(e.target.value);
   };
 
+  // Function to calculate contest duration
   const getContestDuration = (startTime, endTime) => {
     const start = new Date(startTime);
     const end = new Date(endTime);
     const diff = end - start;
+
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
     return `${hours}h ${minutes}m`;
   };
 
+  // Component for live countdown timer
   const CountdownTimer = ({ startTime }) => {
     const [timeLeft, setTimeLeft] = useState(getTimeLeft(startTime));
 
     useEffect(() => {
       const interval = setInterval(() => {
         setTimeLeft(getTimeLeft(startTime));
-      }, 1000);
-      return () => clearInterval(interval);
+      }, 1000); // Update every second
+
+      return () => clearInterval(interval); // Cleanup interval on unmount
     }, [startTime]);
 
     return <span>{timeLeft}</span>;
   };
 
+  // Function to calculate time left for the contest
   const getTimeLeft = (startTime) => {
     const now = new Date();
     const start = new Date(startTime);
     const diff = start - now;
+
     if (diff <= 0) return 'Started';
+
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
     return `${days}d ${hours}h ${minutes}m ${seconds}s`;
   };
 
@@ -58,7 +66,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">Upcoming Contests</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">Your Bookmarks</h1>
 
         {/* Filter Dropdown */}
         <div className="mb-8 flex justify-center">
@@ -81,7 +89,7 @@ const HomePage = () => {
 
         {/* Contest List */}
         <div className="space-y-6">
-          {filteredContests.map((contest) => (
+          {bookmarks?.map((contest) => (
             <div
               key={contest.url}
               className="bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-white/20"
@@ -133,7 +141,6 @@ const HomePage = () => {
                   {bookmarks?.some(b => b._id === contest._id) ? <FaBookmark /> : <FaRegBookmark />}
                 </button>
 
-                {/* Contest Links */}
                 <div className="flex flex-col space-y-2">
                   <a
                     href={contest.link}
@@ -161,6 +168,6 @@ const HomePage = () => {
       </div>
     </div>
   );
-};
+}
 
-export default HomePage;
+export default BookmarkPage

@@ -25,6 +25,13 @@ const setCookies = (res, accessToken, refreshToken) => {
         maxAge : 7 * 24 * 60 * 60 * 1000, // 7 days 
     })
 }
+export const getProfile = async (req, res) => {
+    try {
+        res.json(req.user);
+    } catch (error) {
+        res.status(500).json({message : "Server error", error : error.message});
+    }
+} 
 
 export const signup = async (req, res) => {
     try {
@@ -32,7 +39,7 @@ export const signup = async (req, res) => {
         const userExist = await User.findOne({ email });
 
         if (userExist) {
-            return res.status(400).json({ message: "user already exist" });
+            return res.status(500).json({ message: "user already exist" });
         }
         const user = await User.create({ name, email, password });
 
@@ -45,7 +52,6 @@ export const signup = async (req, res) => {
             _id : user._id,
             name : user.name,
             email : user.email,
-            role : user.role,
         });
     } catch (error) {
         res.status(500).json({message : error.message});
@@ -82,7 +88,7 @@ export const login = async (req, res) => {
             })
         }
         else {
-            res.status(401).json({message : "Invalid email or password"});
+            res.status(500).json({message : "Invalid email or password"});
         }
     } catch (error) {
         res.status(500).json({ message : error.message})
