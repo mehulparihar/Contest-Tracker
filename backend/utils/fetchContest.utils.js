@@ -4,11 +4,16 @@ import { fetchCodeChefContests, fetchCodeforcesContests, fetchLeetCodeContests }
 
 const saveContestsToDB = async (contests) => {
     try {
-        await Contest.deleteMany({});
-        for (const contest of contests) {
-            await Contest.insertMany(contest);
-        }
-        console.log('Contests saved to DB');
+        const bulkOps = contests.map(contest => ({
+            updateOne: {
+                filter: { name: contest.name }, // assuming 'name' is unique
+                update: { $set: contest },
+                upsert: true
+            }
+        }));
+        
+        const result = await Contest.bulkWrite(bulkOps);
+        console.log(`Added ${result.upsertedCount} new contests and updated ${result.modifiedCount} existing ones`);
     } catch (err) {
         console.error('Error saving contests to DB:', err);
     }
