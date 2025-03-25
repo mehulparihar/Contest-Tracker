@@ -1,48 +1,80 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { userStore } from "../stores/userStore";
-import { SunIcon, MoonIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { SunIcon, MoonIcon, ChevronDownIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useTheme } from '../stores/useTheme';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
   const { user, logout, checkAuth } = userStore();
   const { darkMode, toggleDarkMode } = useTheme();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
+  // Close mobile menu when clicking on a link
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMenuOpen && !event.target.closest('.relative')) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMenuOpen]);
+
   return (
     <nav className="sticky bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 fixed w-full top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex-shrink-0 flex items-center"
-          >
-            <Link
-              to="/"
-              className="flex items-center space-x-2"
+          {/* Logo and mobile menu button */}
+          <div className="flex items-center">
+            {/* Mobile menu button */}
+            <button
+              type="button"
+              className="md:hidden p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 focus:outline-none mr-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              <img 
-                src="/ch.jpg" // Path to your image in public folder
-                alt="CodePulse Logo"
-                className="h-8 w-auto" // Adjust height as needed
-              />
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
-                CodeHub
-              </span>
-            </Link>
-          </motion.div>
+              {isMobileMenuOpen ? (
+                <XMarkIcon className="h-5 w-5" />
+              ) : (
+                <Bars3Icon className="h-5 w-5" />
+              )}
+            </button>
 
-          {/* Navigation Links - Center */}
+            {/* Logo */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex-shrink-0 flex items-center"
+            >
+              <Link
+                to="/"
+                className="flex items-center space-x-2"
+              >
+                <img
+                  src="/ch.jpg"
+                  alt="CodePulse Logo"
+                  className="h-8 w-auto"
+                />
+                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
+                  CodeHub
+                </span>
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* Navigation Links - Center (Desktop) */}
           <div className="hidden md:flex space-x-1 items-center">
             <Link
               to="/"
@@ -109,13 +141,6 @@ const Navbar = () => {
                       <p className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
                     </div>
-                    <Link
-                      to="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Your Profile
-                    </Link>
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -126,7 +151,7 @@ const Navbar = () => {
                 )}
               </div>
             ) : (
-              <div className="flex space-x-3">
+              <div className="hidden md:flex space-x-3">
                 <Link
                   to="/login"
                   className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-300"
@@ -146,6 +171,77 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 overflow-hidden"
+          >
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              <Link
+                to="/"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                onClick={closeMobileMenu}
+              >
+                Home
+              </Link>
+              <Link
+                to="/contests/past"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                onClick={closeMobileMenu}
+              >
+                Past Contests
+              </Link>
+              {user && (
+                <Link
+                  to="/bookmarks"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                  onClick={closeMobileMenu}
+                >
+                  Bookmarks
+                </Link>
+              )}
+              {!user && (
+                <>
+                  <Link
+                    to="/login"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                    onClick={closeMobileMenu}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    onClick={closeMobileMenu}
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
+              {user && (
+                <>
+
+                  <button
+                    onClick={() => {
+                      closeMobileMenu();
+                      handleLogout();
+                    }}
+                    className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                  >
+                    Sign out
+                  </button>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };

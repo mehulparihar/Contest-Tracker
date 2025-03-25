@@ -23,8 +23,8 @@ function App() {
       <Navbar/>
       <Routes>
         <Route path='/' element={<HomePage />} />
-        <Route path='/signup' element={user ? <Navigate to='/' /> : <SignUpPage />} />
-        <Route path='/login' element={user ? <Navigate to='/' /> : <LoginPage />} />
+        <Route path='/signup' element={user? <Navigate to='/' /> : <SignUpPage />} />
+        <Route path='/login' element={user? <Navigate to='/' /> : <LoginPage />} />
         <Route path='/bookmarks' element={user ? <BookmarkPage/> : <LoginPage />} />
         <Route path='/contests/past' element={<PastPage />} />
       </Routes>
